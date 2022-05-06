@@ -7,6 +7,10 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <string.h>
+
+#include "simple_udp.h"
+
 
 /*
  * TEST Code
@@ -14,25 +18,13 @@
  */
 
 
-
-
 #define SERIAL_PORT "/dev/ttyUSB1"
 
-enum class Day {
-  Sun,
-  Mon,
-  Tue,
-  Wed,
-  Thu,
-  Fri,
-  Sat
-};
-
+// 送信先IP & Port No 設定
+simple_udp udp0("192.168.30.155",4001);
 
 int main(int argc, char *argv[])
 {
-    Day day = Day::Sat;
-
     std::cout << "Hello Word." << std::endl;
 
     unsigned char msg[] = "serial port open...\n";
@@ -66,6 +58,8 @@ int main(int argc, char *argv[])
     tcsetattr( fd, TCSANOW, &tio );     // デバイスに設定を行う
 
     ioctl(fd, TCSETS, &tio);            // ポートの設定を有効にする
+
+    udp0.udp_send("Hello");
 
     // 送受信処理ループ
     while(1) {
