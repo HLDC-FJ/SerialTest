@@ -8,6 +8,8 @@
 
 #include <iostream>
 #include <string.h>
+#include <sstream>
+#include <string>
 
 #include "simple_udp.h"
 
@@ -26,6 +28,10 @@ simple_udp udp0("192.168.30.155",4001);
 int main(int argc, char *argv[])
 {
     std::cout << "Hello Word." << std::endl;
+
+    std::stringstream ss;
+    std::string s2 , s3;
+    int hoge;
 
     unsigned char msg[] = "serial port open...\n";
     unsigned char buf[255];             // バッファ
@@ -59,19 +65,34 @@ int main(int argc, char *argv[])
 
     ioctl(fd, TCSETS, &tio);            // ポートの設定を有効にする
 
-    udp0.udp_send("Hello");
-
     // 送受信処理ループ
     while(1) {
         len = read(fd, buf, sizeof(buf));
         if (0 < len) {
             for(i = 0; i < len; i++) {
-                //printf("%02X", buf[i]);
-                std::cout << buf[i];
+                //std::cout << buf[i];
+
+                ss << std::hex << buf[i];
+                s2 = s2 + ss.str();
+                //std::cout << s2;
+
+                hoge = s2.find_first_of('\n');
+                if ( hoge != -1){
+                    s3 = s2.substr(0,hoge+1);
+                    s2 = s2.substr(hoge+1);
+                    std::cout << s3;
+                    udp0.udp_send(s3);
+                }
             }
+/*
             if (buf[i] == '\n'){
+                break;
+                std::cout << s2;
+                udp0.udp_send(s2);
                 printf("\n");
+                s2 = "";
             }
+*/
         }
         // エコーバック
         //write(fd, buf, len);
