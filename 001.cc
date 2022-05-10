@@ -109,8 +109,6 @@ int main(int argc, char *argv[])
         len = read(fd, buf, sizeof(buf));
         if (0 < len) {
             for(i = 0; i < len; i++) {
-                //std::cout << buf[i];                // キャラクタ表示
-                //printf("%02X", buf[i]);             // 生データ(Hex)表示
                 ss << std::hex << buf[i];
             }
             s2 += ss.str();
@@ -122,13 +120,7 @@ int main(int argc, char *argv[])
             if (IFast != -1){                       // 改行コードあり
                 TotalLen = s2.length();             // 全データ数
                 ILast = s2.find_last_of("\n");      // 最終改行コード位置
-/*
-                // Debug
-                std::cout << "Len: " << TotalLen << " First:" << IFast << " Last:" << ILast << std::endl;
-                std::cout << "Count : " << count << std::endl;
-                std::cout << "Original: \r\n" << s2 << std::endl;
-                st = s2;                            // データ退避
-*/
+
                 s3 = s2.substr(0,ILast);            // 最終開業コードまで取得
                 if (IFast != ILast){
                     s2 = s2.substr(ILast+1);
@@ -143,47 +135,13 @@ int main(int argc, char *argv[])
                 vector<string> ary = split(s3,"\n");
                 //std::cout << "\r\nSize: " << ary.size() << "\r\n" << std::endl;
                 for (int z=0; z<ary.size(); z++){
-                    //std::cout << ary[z] << std::endl;
                     st = ary[z];
                     st += "\n";
 
                     std::cout << st;
                     udp0.udp_send(st);
                 }
-/*
-                // Debug
-                count++;
-                if (count > 5){
-                    close(fd);
-                    return 0;
-                }
-*/
             }
-
-
-#if 0
-            hoge = s2.find_first_of('\n');
-            if ( hoge != -1){
-                std::cout << "\r\n\r\nS2 :\r\n" << s2 << std::endl;
-                close(fd);
-                return 0;
-
-                st += s2;
-                std::cout << "ST " << st << " <= " << hoge << std::endl;
-
-                s3 = st.substr(0,hoge);
-                st = st.substr(hoge+1);
-                //std::cout << s3;
-                std::cout << "S3 " << s3 << std::endl;
-                std::cout << "ST " << st << std::endl;
-                //udp0.udp_send(s3);
-                count++;
-                if (count == 2){
-                    close(fd);
-                    return 0;
-                }
-            }
-#endif
         }
         // エコーバック
         //write(fd, buf, len);
