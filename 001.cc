@@ -18,16 +18,11 @@
 using namespace std;
 
 /*
- * TEST Code
- * g++ 001.cc にてBuild
+ * 
  */
 
 
 #define SERIAL_PORT "/dev/ttyUSB1"
-
-// 送信先IP & Port No 設定
-//simple_udp udp0("192.168.30.155",4001);
-
 
 
 vector<string> split(string str, string separator) {
@@ -72,8 +67,7 @@ int main(int argc, char *argv[])
     unsigned char buf[255];             // バッファ
     int fd;                             // ファイルディスクリプタ
     struct termios tio;                 // シリアル通信設定
-//    int baudRate = B9600;
-    int baudRate = B921600;
+    int baudRate = B921600;             // ボーレート設定
     int i;
     int len;
     int ret;
@@ -90,6 +84,14 @@ int main(int argc, char *argv[])
     tio.c_cflag += CS8;                 // データビット:8bit
     tio.c_cflag += 0;                   // ストップビット:1bit
     tio.c_cflag += 0;                   // パリティ:None
+
+     //non canonical, non echo back
+    tio.c_iflag &= ~(ECHO | ICANON);
+
+     //non blocking
+     tio.c_cc[VMIN] = 0;
+     tio.c_cc[VTIME] = 0;
+
 
     cfsetispeed( &tio, baudRate );
     cfsetospeed( &tio, baudRate );
@@ -122,7 +124,13 @@ int main(int argc, char *argv[])
                 ILast = s2.find_last_of("\n");      // 最終改行コード位置
 
                 s3 = s2.substr(0,ILast);            // 最終開業コードまで取得
-                if (IFast != ILast){
+
+                /*
+                 * 改行コードにてデータ分割を行う。
+                 * 分割時、最終データ部に改行コードがなかった場合、
+                 * 次回データ受信時処理にて必要となるため、S2へ残す
+                 */
+                if (IFast != ILast){                //　改行コード検出位置不一致?
                     s2 = s2.substr(ILast+1);
                 } else {
                     if ((TotalLen-1) == ILast){
@@ -133,13 +141,11 @@ int main(int argc, char *argv[])
                 }
 
                 vector<string> ary = split(s3,"\n");
-                //std::cout << "\r\nSize: " << ary.size() << "\r\n" << std::endl;
                 for (int z=0; z<ary.size(); z++){
                     st = ary[z];
-                    st += "\n";
-
-                    std::cout << st;
-                    udp0.udp_send(st);
+                    st += "\n";                     // 改行コードを付加しておく
+                    std::cout << st;                // コンソール出力
+                    udp0.udp_send(st);              // UDP にてデータ送信
                 }
             }
         }
