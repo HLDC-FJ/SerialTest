@@ -102,9 +102,26 @@ int main(int argc, char *argv[])
 
     ioctl(fd, TCSETS, &tio);            // ポートの設定を有効にする
 
+    write(fd, "r" ,1);
+    usleep(25000);
+    write(fd, "e" ,1);
+    usleep(25000);
+    write(fd, "s" ,1);
+    usleep(25000);
+    write(fd, "e" ,1);
+    usleep(25000);
+    write(fd, "t" ,1);
+    usleep(25000);
+    write(fd, "\n" ,1);
+    usleep(25000);
+
+
     s2 = "";
     s3 = "";
     st = "";
+    len = 0;
+
+    write(fd, buf, len);
 
     // 送受信処理ループ
     while(1) {
