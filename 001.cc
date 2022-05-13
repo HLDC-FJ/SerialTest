@@ -25,6 +25,7 @@ using namespace std;
 #define SERIAL_PORT "/dev/ttyUSB1"
 
 
+// 文字列 分割処理
 vector<string> split(string str, string separator) {
     if (separator == "") return {str};
     vector<string> result;
@@ -39,21 +40,31 @@ vector<string> split(string str, string separator) {
 }
 
 
+// Serial Tx Data Task
+void Stx(int fd , std::string dat){
+    for (int zz=0; zz<=dat.length(); zz++){
+        std::string hoge = dat.substr(zz,1);
+        write (fd, hoge.c_str() , 1);
+        usleep(25000);
+    }
+}
 
 
+
+// メイン処理
 int main(int argc, char *argv[])
 {
     std::cout << "Hello Word." << std::endl;
 
-    if (argc < 2){
+    if (argc < 1){
+        /*
         std::cout << "引数 Error : ./a.out HostIPaddress PortNo \r\n";
         std::cout << "ex) ./a.out 192.168.30.10 4001" << std::endl;
+        */
+        std::cout << "引数 Error : ./a.out HostIPaddress \r\n";
+        std::cout << "ex) ./a.out 192.168.30.10" << std::endl;
         return -1;
     }
-
-    std::string Hostip = argv[1];
-    int PortNo = atoi(argv[2]);
-    simple_udp udp0(Hostip , PortNo);
 
     std::stringstream ss;
     std::string s2 , s3 , st;
@@ -64,7 +75,7 @@ int main(int argc, char *argv[])
     int count = 0;
 
     unsigned char msg[] = "serial port open...\n";
-    unsigned char buf[255];             // バッファ
+    unsigned char buf[60000];           // バッファ
     int fd;                             // ファイルディスクリプタ
     struct termios tio;                 // シリアル通信設定
     int baudRate = B921600;             // ボーレート設定
@@ -78,6 +89,12 @@ int main(int argc, char *argv[])
         printf("open error\n");
         return -1;
     }
+
+    // UDP Port bind
+    std::string Hostip = argv[1];
+    //int PortNo = atoi(argv[2]);
+    //simple_udp udp0(Hostip , PortNo);
+    simple_udp udp0(Hostip ,4001);
 
     tio.c_cflag += CREAD;               // 受信有効
     tio.c_cflag += CLOCAL;              // ローカルライン（モデム制御なし）
@@ -102,26 +119,14 @@ int main(int argc, char *argv[])
 
     ioctl(fd, TCSETS, &tio);            // ポートの設定を有効にする
 
-    write(fd, "r" ,1);
-    usleep(25000);
-    write(fd, "e" ,1);
-    usleep(25000);
-    write(fd, "s" ,1);
-    usleep(25000);
-    write(fd, "e" ,1);
-    usleep(25000);
-    write(fd, "t" ,1);
-    usleep(25000);
-    write(fd, "\n" ,1);
-    usleep(25000);
-
-
     s2 = "";
     s3 = "";
     st = "";
     len = 0;
 
-    write(fd, buf, len);
+    Stx(fd , "reset\n");
+
+
 
     // 送受信処理ループ
     while(1) {
