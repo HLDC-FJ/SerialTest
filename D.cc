@@ -58,15 +58,9 @@ void Stx(int fd , std::string dat){
 // メイン処理
 int main(int argc, char *argv[])
 {
-    std::cout << "Hello Word." << std::endl;
-
-    if (argc < 1){
-        /*
-        std::cout << "引数 Error : ./a.out HostIPaddress PortNo \r\n";
-        std::cout << "ex) ./a.out 192.168.30.10 4001" << std::endl;
-        */
-        std::cout << "引数 Error : ./a.out HostIPaddress \r\n";
-        std::cout << "ex) ./a.out 192.168.30.10" << std::endl;
+    if (argc <= 1){
+        std::cout << "引数 Error : ./R8A.o HostIPaddress \r\n";
+        std::cout << "ex) ./R8A.o 192.168.30.10" << std::endl;
         return -1;
     }
 
@@ -89,6 +83,8 @@ int main(int argc, char *argv[])
     int ret;
     int size;
 
+    int PortNo = 4001;
+
     fd = open(SERIAL_PORT, O_RDWR);     // デバイスをオープンする
     if (fd < 0) {
         printf("open error\n");
@@ -97,9 +93,13 @@ int main(int argc, char *argv[])
 
     // UDP Port bind
     std::string Hostip = argv[1];
+    if (argc == 3){
+    	PortNo = atoi(argv[2]);
+    }
+    	
     //int PortNo = atoi(argv[2]);
-    //simple_udp udp0(Hostip , PortNo);
-    simple_udp udp0(Hostip ,4001);
+    simple_udp udp0(Hostip , PortNo);
+    //simple_udp udp0(Hostip ,4001);
 
     tio.c_cflag += CREAD;               // 受信有効
     tio.c_cflag += CLOCAL;              // ローカルライン（モデム制御なし）
